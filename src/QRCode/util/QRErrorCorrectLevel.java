@@ -1,4 +1,4 @@
-package util;
+package QRCode.util;
 
 /**
  * Created by baislsl on 17-5-18.
@@ -12,5 +12,9 @@ public enum QRErrorCorrectLevel {
     private int errorCode;
     QRErrorCorrectLevel(int errorCode){
         this.errorCode = errorCode;
+    }
+
+    public int getCode(){
+        return errorCode;
     }
 }

@@ -1,4 +1,4 @@
-package util;
+package QRCode.util;
 
 /**
  * Created by baislsl on 17-5-18.

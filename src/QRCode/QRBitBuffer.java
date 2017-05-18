@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class QRBitBuffer {
     private int length;
-    private ArrayList<Integer> buffer;
+    public ArrayList<Integer> buffer;
 
     public QRBitBuffer() {
         this.length = 0;
@@ -22,7 +22,7 @@ public class QRBitBuffer {
 
     public void put(int num, int length) {
         for (int i = 0; i < length; i++) {
-
+            this.putBit(((num >>> (length - i - 1)) & 1) == 1);
         }
     }
 
@@ -30,12 +30,12 @@ public class QRBitBuffer {
         return this.length;
     }
 
-    public void putBit(int bit) {
+    public void putBit(boolean bit) {
         int bufIndex = (int) (((double) length) / 8);
         if (this.buffer.size() <= bufIndex) {
             this.buffer.add(0);
         }
-        if (bit != 0) {
+        if (bit) {
             int var = buffer.get(bufIndex);
             var |= (0x80 >>> (this.length % 8));
             buffer.set(bufIndex, var);

@@ -1,6 +1,6 @@
 package QRCode;
 
-import util.QRMath;
+import QRCode.util.QRMath;
 
 /**
  * Created by baislsl on 17-5-18.

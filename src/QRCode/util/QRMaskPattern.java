@@ -1,4 +1,4 @@
-package util;
+package QRCode.util;
 
 /**
  * Created by baislsl on 17-5-18.
@@ -11,5 +11,9 @@ public enum QRMaskPattern {
     PATTERN100,
     PATTERN101,
     PATTERN110,
-    PATTERN111
+    PATTERN111;
+
+    public int getCode(){
+        return this.ordinal();
+    }
 }

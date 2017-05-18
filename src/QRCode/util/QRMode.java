@@ -1,4 +1,4 @@
-package util;
+package QRCode.util;
 
 /**
  * Created by baislsl on 17-5-18.
@@ -13,5 +13,9 @@ public enum QRMode {
 
     QRMode(int code) {
         this.code = code;
+    }
+
+    public int getCode(){
+        return code;
     }
 }
