@@ -1,4 +1,4 @@
-package QRCode;
+package QRCode.QR;
 
 import java.util.ArrayList;
 
@@ -31,7 +31,7 @@ public class QRBitBuffer {
     }
 
     public void putBit(boolean bit) {
-        int bufIndex = (int) (((double) length) / 8);
+        int bufIndex = (int)Math.floor(this.length / 8.0);
         if (this.buffer.size() <= bufIndex) {
             this.buffer.add(0);
         }

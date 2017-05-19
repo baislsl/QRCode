@@ -1,4 +1,4 @@
-#A QRCode Generator
+## A QRCode Generator
 This repository translate the input string inro QRCode and automatically 
 generate a picture of the QRCode.
 
@@ -8,10 +8,10 @@ to java.
 
 The original project was built in IntelliJ IDEA under Ubuntu 16.04 LTS.
 
-#Screenshot
+## Screenshot
 ![](./screenshot.png)
 
-#How to use
+## How to use
 Include the QRCode package into the java code.
 ```java
 import QRCode.Draw.QRDrawPanel;

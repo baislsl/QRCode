@@ -1,4 +1,4 @@
-package QRCode;
+package QRCode.QR;
 
 import QRCode.util.QRMath;
 

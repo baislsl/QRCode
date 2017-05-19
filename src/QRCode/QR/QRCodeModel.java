@@ -1,4 +1,4 @@
-package QRCode;
+package QRCode.QR;
 
 import QRCode.util.QRErrorCorrectLevel;
 import QRCode.util.QRMaskPattern;
@@ -51,10 +51,11 @@ public class QRCodeModel {
         moduleCount = typeNumber * 4 + 17;
         modules = new Boolean[moduleCount][moduleCount];
         this.setupPositionProbePattern(0, 0);
-        this.setupPositionProbePattern(this.moduleCount - 7, 0);
-        this.setupPositionProbePattern(0, this.moduleCount - 7);
-        this.setupPositionAdjustPattern();
-        this.setupTimingPattern();
+        this.setupPositionProbePattern(moduleCount - 7, 0);
+        this.setupPositionProbePattern(0, moduleCount - 7);
+        this.setupPositionAdjustPattern(); // suppose right
+        this.setupTimingPattern();          // suppose right
+        String textInfo = test ? "true" : "false";
         this.setupTypeInfo(test, maskPattern);
         if (this.typeNumber >= 7) {
             this.setupTypeNumber(test);
@@ -103,10 +104,11 @@ public class QRCodeModel {
     }
 
     private QRMaskPattern getBestMaskPattern() {
-        int minLostPoint = 0, pattern = 0;
+        int pattern = 0;
+        double minLostPoint = 0;
         for (int i = 0; i < 8; i++) {
             this.makeImpl(true, QRMaskPattern.values()[i]);
-            int lostPoint = QRUtil.getLostPoint(this);
+            double lostPoint = QRUtil.getLostPoint(this);
             if (i == 0 || minLostPoint > lostPoint) {
                 minLostPoint = lostPoint;
                 pattern = i;

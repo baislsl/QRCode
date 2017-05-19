@@ -1,74 +1,82 @@
 package QRCode.util;
 
-import QRCode.QRCodeModel;
-import QRCode.QRPolynomial;
+import QRCode.QR.QRCodeModel;
+import QRCode.QR.QRPolynomial;
 
 /**
  * Created by baislsl on 17-5-18.
  */
 public class QRUtil {
-    private static int[][] PATTERN_POSITION_TABLE = {
+    private final static int[][] PATTERN_POSITION_TABLE = {
             {}, {6, 18}, {6, 22}, {6, 26}, {6, 30}, {6, 34}, {6, 22, 38}, {6, 24, 42}, {6, 26, 46}, {6, 28, 50}, {6, 30, 54}, {6, 32, 58}, {6, 34, 62}, {6, 26, 46, 66}, {6, 26, 48, 70}, {6, 26, 50, 74}, {6, 30, 54, 78}, {6, 30, 56, 82}, {6, 30, 58, 86}, {6, 34, 62, 90}, {6, 28, 50, 72, 94}, {6, 26, 50, 74, 98}, {6, 30, 54, 78, 102}, {6, 28, 54, 80, 106}, {6, 32, 58, 84, 110}, {6, 30, 58, 86, 114}, {6, 34, 62, 90, 118}, {6, 26, 50, 74, 98, 122}, {6, 30, 54, 78, 102, 126}, {6, 26, 52, 78, 104, 130}, {6, 30, 56, 82, 108, 134}, {6, 34, 60, 86, 112, 138}, {6, 30, 58, 86, 114, 142}, {6, 34, 62, 90, 118, 146}, {6, 30, 54, 78, 102, 126, 150}, {6, 24, 50, 76, 102, 128, 154}, {6, 28, 54, 80, 106, 132, 158}, {6, 32, 58, 84, 110, 136, 162}, {6, 26, 54, 82, 110, 138, 166}, {6, 30, 58, 86, 114, 142, 170}
     };
-    private static int G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
-    private static int G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
-    private static int G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+    private final static int G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    private final static int G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    private final static int G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
 
-    public static int getBCHTypeInfo(int data){
+    public static int getBCHTypeInfo(int data) {
         int d = data << 10;
-        while(QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G15) >= 0){
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G15) >= 0) {
             d ^= (G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G15)));
         }
         return ((data << 10) | d) ^ G15_MASK;
     }
 
 
-    public static int getBCHDigit(int data){
+    private static int getBCHDigit(int data) {
         int digit = 0;
-        while(data != 0){
+        while (data != 0) {
             digit++;
             data >>>= 1;
         }
         return digit;
     }
 
-    public static int getBCHTypeNumber(int data){
+    public static int getBCHTypeNumber(int data) {
         int d = data << 12;
-        while(QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G18) >= 0){
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G18) >= 0) {
             d ^= (G18 << QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(G18));
         }
         return (data << 12) | d;
     }
 
-    public static int[] getPatternPosition(int typeNumber){
+    public static int[] getPatternPosition(int typeNumber) {
         return PATTERN_POSITION_TABLE[typeNumber - 1];
     }
 
-    public static boolean getMask(QRMaskPattern maskPattern, int i, int j){
-        switch (maskPattern){
-            case PATTERN000: return (i + j) % 2 == 0;
-            case PATTERN001: return i%2 == 0;
-            case PATTERN010: return j%3 ==0;
-            case PATTERN011: return (i+j)%3 == 0;
-            case PATTERN100: return (Math.floor(i / 2) + Math.floor(j/3)) %  2 ==0;
-            case PATTERN101: return (i*j)%2 + (i*j)%3 == 0;
-            case PATTERN110: return (i*j)%2 + ((i*j)%3)%2 == 0;
-            case PATTERN111: return (i*j)%3 + ((i*j)%2)%2 == 0;
+    public static boolean getMask(QRMaskPattern maskPattern, int i, int j) {
+        switch (maskPattern) {
+            case PATTERN000:
+                return (i + j) % 2 == 0;
+            case PATTERN001:
+                return i % 2 == 0;
+            case PATTERN010:
+                return j % 3 == 0;
+            case PATTERN011:
+                return (i + j) % 3 == 0;
+            case PATTERN100:
+                return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 == 0;
+            case PATTERN101:
+                return (i * j) % 2 + (i * j) % 3 == 0;
+            case PATTERN110:
+                return ((i * j) % 2 + (i * j) % 3) % 2 == 0;
+            case PATTERN111:
+                return ((i * j) % 3 + (i + j) % 2) % 2 == 0;
             default:
                 System.err.println("bad maskPattern:" + maskPattern);
                 return false;
         }
     }
 
-    public static QRPolynomial getErrorCorrectPolynomial(int errorCorrectLength){
-        QRPolynomial a = new QRPolynomial(new int[1], 0);
-        for(int i=0;i<errorCorrectLength;i++){
+    public static QRPolynomial getErrorCorrectPolynomial(int errorCorrectLength) {
+        QRPolynomial a = new QRPolynomial(new int[]{1}, 0);
+        for (int i = 0; i < errorCorrectLength; i++) {
             a = a.multiply(new QRPolynomial(new int[]{1, QRMath.gexp(i)}, 0));
         }
         return a;
     }
 
-    public static int getLengthInBits(QRMode mode, int type){
+    public static int getLengthInBits(QRMode mode, int type) {
         if (1 <= type && type < 10) {
             switch (mode) {
                 case MODE_NUMBER:
@@ -113,9 +121,9 @@ public class QRUtil {
         }
     }
 
-    public static int getLostPoint(QRCodeModel qrCode){
+    public static double getLostPoint(QRCodeModel qrCode) {
         int moduleCount = qrCode.getModuleCount();
-        int lostPoint = 0;
+        double lostPoint = 0;
         for (int row = 0; row < moduleCount; row++) {
             for (int col = 0; col < moduleCount; col++) {
                 int sameCount = 0;
@@ -175,7 +183,7 @@ public class QRUtil {
                 }
             }
         }
-        int ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        double ratio = Math.abs(100.0 * darkCount / moduleCount / moduleCount - 50) / 5;
         lostPoint += ratio * 10;
         return lostPoint;
     }

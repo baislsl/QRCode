@@ -1,6 +1,7 @@
 package test;
 
-import QRCode.QRCodeModel;
+import QRCode.Draw.QRDrawPanel;
+import QRCode.util.QRErrorCorrectLevel;
 
 import java.util.Scanner;
 
@@ -9,8 +10,19 @@ import java.util.Scanner;
  */
 public class Main {
     public static void main(String[] args){
-        // QRCodeModel codeModel = new QRCodeModel()
-        transfer();
+        test();
+        // test1();
+    }
+
+    public static void test(){
+        new QRDrawPanel("https://github.com/baislsl/QRCode").draw();
+    }
+
+    public static void test1(){
+        final String text = "http://www.cc98.org/queryresult.asp?page=2&stype=3&pSearch=&nSearch=&keyword=&SearchDate=&boardid=0&stable=bbs5&sertype=1";
+        final QRErrorCorrectLevel errorCorrectLevel = QRErrorCorrectLevel.H;
+        new QRDrawPanel(text, errorCorrectLevel).draw();
+
     }
 
     public static void transfer(){
