@@ -14,8 +14,8 @@ public class QRCodeModel {
     private QRErrorCorrectLevel errorCorrectLevel;
     private Boolean[][] modules;
     private int moduleCount;
-    ArrayList<Integer> dataCache;
-    ArrayList<QR8bitByte> dataList;
+    private byte[] dataCache;
+    private ArrayList<QR8bitByte> dataList;
     private static int PAD0 = 0xEC;
     private static int PAD1 = 0x11;
 
@@ -23,7 +23,6 @@ public class QRCodeModel {
         this.typeNumber = typeNumber;
         this.errorCorrectLevel = errorCorrectLevel;
         this.moduleCount = 0;
-        this.dataCache = new ArrayList<>();
         this.dataList = new ArrayList<>();
     }
 
@@ -37,28 +36,37 @@ public class QRCodeModel {
         if (row < 0 || moduleCount <= row || col < 0 || moduleCount <= col) {
             throw new Error(row + "," + col);
         }
-        return this.modules[row][col];
+        return modules[row][col];
     }
 
     public int getModuleCount() {
         return moduleCount;
     }
 
-    public void mark() {
+    public void make() {
         this.makeImpl(false, getBestMaskPattern());
     }
 
-    public void makeImpl(boolean test, int maskPattern) {
+    private void makeImpl(boolean test, QRMaskPattern maskPattern) {
         moduleCount = typeNumber * 4 + 17;
         modules = new Boolean[moduleCount][moduleCount];
         this.setupPositionProbePattern(0, 0);
         this.setupPositionProbePattern(this.moduleCount - 7, 0);
         this.setupPositionProbePattern(0, this.moduleCount - 7);
         this.setupPositionAdjustPattern();
+        this.setupTimingPattern();
+        this.setupTypeInfo(test, maskPattern);
+        if (this.typeNumber >= 7) {
+            this.setupTypeNumber(test);
+        }
+        if (this.dataCache == null) {
+            this.dataCache = QRCodeModel.createData(this.typeNumber,
+                    this.errorCorrectLevel, this.dataList.toArray(new QR8bitByte[0]));
+        }
+        this.mapData(this.dataCache, maskPattern);
     }
 
-
-    public void setupPositionProbePattern(int row, int col) {
+    private void setupPositionProbePattern(int row, int col) {
         for (int r = -1; r <= 7; r++) {
             if (row + r <= -1 || this.moduleCount <= row + r) continue;
             for (int c = -1; c <= 7; c++) {
@@ -72,7 +80,7 @@ public class QRCodeModel {
         }
     }
 
-    public void setupPositionAdjustPattern() {
+    private void setupPositionAdjustPattern() {
         int[] pos = QRUtil.getPatternPosition(this.typeNumber);
         for (int i = 0; i < pos.length; i++) {
             for (int j = 0; j < pos.length; j++) {
@@ -94,20 +102,20 @@ public class QRCodeModel {
         }
     }
 
-    public int getBestMaskPattern() {
+    private QRMaskPattern getBestMaskPattern() {
         int minLostPoint = 0, pattern = 0;
         for (int i = 0; i < 8; i++) {
-            this.makeImpl(true, i);
+            this.makeImpl(true, QRMaskPattern.values()[i]);
             int lostPoint = QRUtil.getLostPoint(this);
             if (i == 0 || minLostPoint > lostPoint) {
                 minLostPoint = lostPoint;
                 pattern = i;
             }
         }
-        return pattern;
+        return QRMaskPattern.values()[pattern];
     }
 
-    public void setupTimingPattern() {
+    private void setupTimingPattern() {
         for (int r = 8; r < this.moduleCount - 8; r++) {
             if (this.modules[r][6] != null) {
                 continue;
@@ -122,7 +130,7 @@ public class QRCodeModel {
         }
     }
 
-    public void setupTypeNumber(boolean test) {
+    private void setupTypeNumber(boolean test) {
         int bits = QRUtil.getBCHTypeNumber(this.typeNumber);
         for (int i = 0; i < 18; i++) {
             boolean mod = (!test && ((bits >> i) & 1) == 1);
@@ -134,7 +142,7 @@ public class QRCodeModel {
         }
     }
 
-    public void setupTypeInfo(boolean test, QRMaskPattern maskPattern) {
+    private void setupTypeInfo(boolean test, QRMaskPattern maskPattern) {
         int data = (errorCorrectLevel.getCode() << 3) | maskPattern.getCode();
         int bits = QRUtil.getBCHTypeInfo(data);
         for (int i = 0; i < 15; i++) {
@@ -160,7 +168,7 @@ public class QRCodeModel {
         this.modules[this.moduleCount - 8][8] = (!test);
     }
 
-    public void mapData(String data, QRMaskPattern maskPattern) {
+    private void mapData(byte[] data, QRMaskPattern maskPattern) {
         int inc = -1;
         int row = this.moduleCount - 1;
         int bitIndex = 7;
@@ -171,8 +179,8 @@ public class QRCodeModel {
                 for (int c = 0; c < 2; c++) {
                     if (this.modules[row][col - c] == null) {
                         boolean dark = false;
-                        if (byteIndex < data.length()) {
-                            dark = (((data.charAt(byteIndex) >>> bitIndex) & 1) == 1);
+                        if (byteIndex < data.length) {
+                            dark = (((data[byteIndex] >>> bitIndex) & 1) == 1);
                         }
                         boolean mask = QRUtil.getMask(maskPattern, row, col - c);
                         if (mask) {
@@ -196,19 +204,18 @@ public class QRCodeModel {
         }
     }
 
-    public static byte[] createData(int typeNumber, QRErrorCorrectLevel errorCorrectLevel,
+    private static byte[] createData(int typeNumber, QRErrorCorrectLevel errorCorrectLevel,
                                     QR8bitByte[] dataList) {
         QRRSBlock[] rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
         QRBitBuffer buffer = new QRBitBuffer();
-        for (int i = 0; i < dataList.length; i++) {
-            QR8bitByte data = dataList[i];
+        for(QR8bitByte data : dataList){
             buffer.put(data.getMode().getCode(), 4);
             buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber));
             data.write(buffer);
         }
         int totalDataCount = 0;
-        for (int i = 0; i < rsBlocks.length; i++) {
-            totalDataCount += rsBlocks[i].dataCount;
+        for (QRRSBlock rsBlock : rsBlocks) {
+            totalDataCount += rsBlock.dataCount;
         }
         if (buffer.getLengthInBits() > totalDataCount * 8) {
             throw new Error("code length overflow. ("
@@ -236,38 +243,36 @@ public class QRCodeModel {
         return QRCodeModel.createBytes(buffer, rsBlocks);
     }
 
-    public static byte[] createBytes(QRBitBuffer buffer, QRRSBlock[] rsBlocks) {
+    private static byte[] createBytes(QRBitBuffer buffer, QRRSBlock[] rsBlocks) {
         int offset = 0;
         int maxDcCount = 0;
         int maxEcCount = 0;
 
-        for (int r = 0; r < rsBlocks.length; r++) {
-            maxDcCount = Math.max(maxDcCount, rsBlocks[r].dataCount);
-            maxEcCount = Math.max(maxEcCount, rsBlocks[r].totalCount - rsBlocks[r].dataCount);
-        }
+        int[][] dcdata = new int[rsBlocks.length][];
+        int[][] ecdata = new int[rsBlocks.length][];
 
-        int[][] dcdata = new int[rsBlocks.length][maxDcCount];
-        int[][] ecdata = new int[rsBlocks.length][maxEcCount];
         for (int r = 0; r < rsBlocks.length; r++) {
             int dcCount = rsBlocks[r].dataCount;
             int ecCount = rsBlocks[r].totalCount - dcCount;
-            maxDcCount = Math.max(maxDcCount, dcCount);
-            maxEcCount = Math.max(maxEcCount, ecCount);
-            for (int i = 0; i < dcdata[r].length; i++) {
+            maxDcCount = Math.max(maxDcCount, rsBlocks[r].dataCount);
+            maxEcCount = Math.max(maxEcCount, rsBlocks[r].totalCount - rsBlocks[r].dataCount);
+            dcdata[r] = new int[dcCount];
+            for (int i = 0; i < dcCount; i++) {
                 dcdata[r][i] = 0xff & buffer.buffer.get(i + offset);
             }
             offset += dcCount;
             QRPolynomial rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
             QRPolynomial rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
             QRPolynomial modPoly = rawPoly.mod(rsPoly);
+            ecdata[r] = new int[rsPoly.getLength() - 1];
             for (int i = 0; i < ecdata[r].length; i++) {
                 int modIndex = i + modPoly.getLength() - ecdata[r].length;
                 ecdata[r][i] = (modIndex >= 0) ? modPoly.get(modIndex) : 0;
             }
         }
         int totalCodeCount = 0;
-        for (int i = 0; i < rsBlocks.length; i++) {
-            totalCodeCount += rsBlocks[i].totalCount;
+        for(QRRSBlock rsBlock : rsBlocks){
+            totalCodeCount += rsBlock.totalCount;
         }
         byte[] data = new byte[totalCodeCount];
         int index = 0;

@@ -16,7 +16,7 @@ public class QRPolynomial {
         }
         this.num = new int[num.length - offset + shift];
         for (int i = 0; i < num.length - offset; i++) {
-            this.num[i] = num[i] + offset;
+            this.num[i] = num[i + offset];
         }
     }
 

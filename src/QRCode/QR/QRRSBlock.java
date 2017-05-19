@@ -26,7 +26,7 @@ public class QRRSBlock {
         int length = rsBlock.length / 3;
         ArrayList<QRRSBlock> list = new ArrayList<>();
         for (int i = 0; i < length; i++) {
-            int count = rsBlock[i * 3 + 0];
+            int count = rsBlock[i * 3];
             int totalCount = rsBlock[i * 3 + 1];
             int dataCount = rsBlock[i * 3 + 2];
             for (int j = 0; j < count; j++) {
@@ -39,7 +39,7 @@ public class QRRSBlock {
     public static int[] getRsBlockTable(int typeNumber, QRErrorCorrectLevel errorCorrectLevel){
         switch (errorCorrectLevel) {
             case L:
-                return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+                return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4];
             case M:
                 return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
             case Q:
