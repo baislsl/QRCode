@@ -21,11 +21,11 @@ Generate QR image
 new QRDrawPanel("https://github.com/baislsl/QRCode").draw();
 ```
 You can define your QRErrorCorrectLevel by 
-```
+```java
 import QRCode.util.QRErrorCorrectLevel;
 
 final QRErrorCorrectLevel errorCorrectLevel = QRErrorCorrectLevel.H;
-new QRDrawPanel(text, errorCorrectLevel).draw();
+new QRDrawPanel("https://github.com/baislsl/QRCode", errorCorrectLevel).draw();
 ```
 where QRErrorCorrectLevel is defined in [QRErrorCorrectLevel.java](./src/QRCode/util/QRErrorCorrectLevel.java) as
 ```java
