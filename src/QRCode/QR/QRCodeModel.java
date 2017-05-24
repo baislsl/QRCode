@@ -53,25 +53,24 @@ public class QRCodeModel {
         this.setupPositionProbePattern(0, 0);
         this.setupPositionProbePattern(moduleCount - 7, 0);
         this.setupPositionProbePattern(0, moduleCount - 7);
-        this.setupPositionAdjustPattern(); // suppose right
-        this.setupTimingPattern();          // suppose right
-        String textInfo = test ? "true" : "false";
+        this.setupPositionAdjustPattern();
+        this.setupTimingPattern();
         this.setupTypeInfo(test, maskPattern);
-        if (this.typeNumber >= 7) {
-            this.setupTypeNumber(test);
+        if (typeNumber >= 7) {
+            setupTypeNumber(test);
         }
-        if (this.dataCache == null) {
-            this.dataCache = QRCodeModel.createData(this.typeNumber,
-                    this.errorCorrectLevel, this.dataList.toArray(new QR8bitByte[0]));
+        if (dataCache == null) {
+            dataCache = QRCodeModel.createData(typeNumber,
+                    errorCorrectLevel, dataList.toArray(new QR8bitByte[0]));
         }
-        this.mapData(this.dataCache, maskPattern);
+        mapData(dataCache, maskPattern);
     }
 
     private void setupPositionProbePattern(int row, int col) {
         for (int r = -1; r <= 7; r++) {
-            if (row + r <= -1 || this.moduleCount <= row + r) continue;
+            if (row + r <= -1 || moduleCount <= row + r) continue;
             for (int c = -1; c <= 7; c++) {
-                if (col + c <= -1 || this.moduleCount <= col + c) continue;
+                if (col + c <= -1 || moduleCount <= col + c) continue;
                 if ((0 <= r && r <= 6 && (c == 0 || c == 6)) || (0 <= c && c <= 6 && (r == 0 || r == 6)) || (2 <= r && r <= 4 && 2 <= c && c <= 4)) {
                     modules[row + r][col + c] = true;
                 } else {
@@ -82,12 +81,12 @@ public class QRCodeModel {
     }
 
     private void setupPositionAdjustPattern() {
-        int[] pos = QRUtil.getPatternPosition(this.typeNumber);
+        int[] pos = QRUtil.getPatternPosition(typeNumber);
         for (int i = 0; i < pos.length; i++) {
             for (int j = 0; j < pos.length; j++) {
                 int row = pos[i];
                 int col = pos[j];
-                if (this.modules[row][col] != null) {
+                if (modules[row][col] != null) {
                     continue;
                 }
                 for (int r = -2; r <= 2; r++) {
@@ -118,14 +117,14 @@ public class QRCodeModel {
     }
 
     private void setupTimingPattern() {
-        for (int r = 8; r < this.moduleCount - 8; r++) {
-            if (this.modules[r][6] != null) {
+        for (int r = 8; r < moduleCount - 8; r++) {
+            if (modules[r][6] != null) {
                 continue;
             }
             this.modules[r][6] = (r % 2 == 0);
         }
-        for (int c = 8; c < this.moduleCount - 8; c++) {
-            if (this.modules[6][c] != null) {
+        for (int c = 8; c < moduleCount - 8; c++) {
+            if (modules[6][c] != null) {
                 continue;
             }
             this.modules[6][c] = (c % 2 == 0);
@@ -150,36 +149,36 @@ public class QRCodeModel {
         for (int i = 0; i < 15; i++) {
             boolean mod = (!test && ((bits >> i) & 1) == 1);
             if (i < 6) {
-                this.modules[i][8] = mod;
+                modules[i][8] = mod;
             } else if (i < 8) {
-                this.modules[i + 1][8] = mod;
+                modules[i + 1][8] = mod;
             } else {
-                this.modules[this.moduleCount - 15 + i][8] = mod;
+                modules[moduleCount - 15 + i][8] = mod;
             }
         }
         for (int i = 0; i < 15; i++) {
             boolean mod = (!test && ((bits >> i) & 1) == 1);
             if (i < 8) {
-                this.modules[8][this.moduleCount - i - 1] = mod;
+                modules[8][moduleCount - i - 1] = mod;
             } else if (i < 9) {
-                this.modules[8][15 - i - 1 + 1] = mod;
+                modules[8][15 - i - 1 + 1] = mod;
             } else {
-                this.modules[8][15 - i - 1] = mod;
+                modules[8][15 - i - 1] = mod;
             }
         }
-        this.modules[this.moduleCount - 8][8] = (!test);
+        modules[moduleCount - 8][8] = (!test);
     }
 
     private void mapData(byte[] data, QRMaskPattern maskPattern) {
         int inc = -1;
-        int row = this.moduleCount - 1;
+        int row = moduleCount - 1;
         int bitIndex = 7;
         int byteIndex = 0;
-        for (int col = this.moduleCount - 1; col > 0; col -= 2) {
+        for (int col = moduleCount - 1; col > 0; col -= 2) {
             if (col == 6) col--;
             while (true) {
                 for (int c = 0; c < 2; c++) {
-                    if (this.modules[row][col - c] == null) {
+                    if (modules[row][col - c] == null) {
                         boolean dark = false;
                         if (byteIndex < data.length) {
                             dark = (((data[byteIndex] >>> bitIndex) & 1) == 1);
@@ -197,7 +196,7 @@ public class QRCodeModel {
                     }
                 }
                 row += inc;
-                if (row < 0 || this.moduleCount <= row) {
+                if (row < 0 || moduleCount <= row) {
                     row -= inc;
                     inc = -inc;
                     break;
